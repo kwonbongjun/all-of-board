@@ -1,0 +1,8 @@
+.idea
+*.iml
+target
+frontend/node_modules
+frontend/.eslintcache
+frontend/.gitignore
+frontend/debug.log
+frontend/README.md
