@@ -1,5 +1,6 @@
-package com.rating.bong;
+package com.board.bong.repository;
 
+import com.board.bong.bean.Account;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

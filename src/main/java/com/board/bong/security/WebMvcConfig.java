@@ -1,4 +1,4 @@
-package com.rating.bong;
+package com.board.bong.security;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -9,7 +9,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://172.30.1.10:3000");
+                .allowedOrigins("http://localhost:3000")
+                .allowCredentials(true);
 
     }
 }

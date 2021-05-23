@@ -6,3 +6,5 @@ frontend/.eslintcache
 frontend/.gitignore
 frontend/debug.log
 frontend/README.md
+keystore.p12
+src/main/resources/application.properties

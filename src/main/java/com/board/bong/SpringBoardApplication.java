@@ -1,5 +1,7 @@
-package com.rating.bong;
+package com.board.bong;
 
+import com.board.bong.bean.Account;
+import com.board.bong.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.CommandLineRunner;
@@ -9,9 +11,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 @SpringBootApplication
-public class RatingApplication implements CommandLineRunner {
+public class SpringBoardApplication implements CommandLineRunner {
     public static void main(String[] args) {
-        SpringApplication.run(RatingApplication.class, args);
+        SpringApplication.run(SpringBoardApplication.class, args);
     }
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -23,9 +25,9 @@ public class RatingApplication implements CommandLineRunner {
     public ApplicationRunner applicationRunner() {
         return args -> {
             Account account = new Account("Alice1","Smith1");
-//            account.setEmail("max9106@naver.com");
-//            account.setUsername("junseo");
-
+            System.out.println("---------" + account.getUsername());
+//            account.setEmail("");
+//            account.setUsername("");
 //            mongoTemplate.insert(account);
         };
     }
@@ -33,8 +35,6 @@ public class RatingApplication implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         repository.deleteAll();
-
-        // save a couple of customers
 //        repository.save(new Account("Alice", "Smith"));
 //        repository.save(new Customer("Bob", "Smith"));
 

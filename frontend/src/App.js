@@ -1,26 +1,17 @@
-import React, {useState, useEffect} from 'react';
-import logo from './logo.svg';
 import './App.css';
-
+import Main from './Main.jsx';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import signUpComponent from './user/SignUpCompoenent';
 function App () {
-const [message, setMessage] = useState("");
-useEffect(() => {
-fetch('/all')
-.then(response => response.text())
-.then(message => {
-setMessage(message);
-});
-},[])
-return (
-<div className="App">
-<header className="App-header">
-<img src={logo} className="App-logo" alt="logo"/>
-<h1 className="App-title">{message}</h1>
-</header>
-<p className="App-intro">
-To get started, edit <code>src/App.js</code> and save to reload.
-</p>
-</div>
-)
+    return (
+        <div id="app" className="App">
+            <Router>
+                <Switch>
+                    <Route exact path='/signUp' component={signUpComponent} />
+                    <Route component={Main} />
+                </Switch>
+            </Router>
+        </div>
+    )
 }
 export default App;
