@@ -1,10 +1,19 @@
 package com.board.bong.contorller;
 
+import com.board.bong.bean.ErrorResponse;
 import com.board.bong.bean.User;
 import com.board.bong.repository.UserRepository;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.UnexpectedRollbackException;
 import org.springframework.web.bind.annotation.*;
+
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -13,19 +22,30 @@ public class UserController {
     private UserRepository userRepository;
 
     @PostMapping(path = "/login/signUp")
-    public void singUp(@RequestBody SignUpParam signUpParam) {
+    public ResponseEntity<?> singUp(@RequestBody SignUpParam signUpParam) throws  Exception{
         String idForEncode = "bcrypt";
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
         User user = new User();
         try {
+            User exist = userRepository.findById(signUpParam.id);
+            if(exist != null) {
+                ErrorResponse errorResponse = new ErrorResponse();
+                errorResponse.setMessage("존재하는 ID 입니다.");
+                return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+            }
+
             user.setId(signUpParam.id);
             user.setPassword("{" + idForEncode + "}" + encoder.encode(signUpParam.password));
             user.setRole("USER");
             userRepository.save(user);
-        } catch (Exception e) {
-            e.printStackTrace();
+            return null;
         }
-    };
+        catch (Exception e) {
+            e.printStackTrace();
+//            throw e;
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     public static class SignUpParam { // implements Serializable {
         public String id;

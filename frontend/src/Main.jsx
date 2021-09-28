@@ -1,20 +1,14 @@
-import React, {useState, useEffect} from 'react';
 import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
-import './App.css';
-import Test from './test.jsx';
+import StatisticsComponent from './statistics/StatisticsComponent.jsx';
 import BoardComponent from './board/BoardComponent.jsx';
 import BoardContentsComponent from './board/BoardContentsComponent';
 import Test2 from './test2';
 import * as User from './user/User.ts';
-// import './Button.scss';
-import axios from 'axios';
-import { render } from '@testing-library/react';
 import {Component} from "react";
 import styled from 'styled-components';
-import signUpComponent from './user/SignUpCompoenent';
 import BoardEditComponent from './board/BoardEditComponent.jsx';
 import * as Axios from './lib/Axios.ts'
-
+import MapComponent from './MapComponent'
 function LogoutComponent(props) {
   async function logout() {
     try {
@@ -86,7 +80,7 @@ const StyledButton = styled.button`
   }
 `;
 const StyledHeaderDiv = styled.div`
-    flex-basis: 10%;//기본 크기 설정
+    flex-basis: 15%;//기본 크기 설정
     flex-grow: 0;//얼마나 더 커질 수 있냐 빈공간 메움 빈 공간을 비율대로 나눈다.
     flex-shrink: 1;//얼마나 작아질 수 있는가 0이면 basis보다 작아질 수 없다.
     //flex: 로 위의 세개를 한 번에 지정할 수 있다.
@@ -101,10 +95,11 @@ const StyledTabDiv = styled.div`
   justify-content: flex-start; // 메인축 방향 정렬(가로)
   align-items: stretch; //메인축과 수직 방향 정렬
   width: 1200px;
-  margin: 0 auto;
+  margin: 10px auto;
 `;
 const StyledContainerDiv = styled.div`
-  flex-basis: 80%;//기본 크기 설정
+  display: flex;
+  flex-basis: 70%;//기본 크기 설정
   flex-grow: 0;//얼마나 더 커질 수 있냐 빈공간 메움 빈 공간을 비율대로 나눈다.
   flex-shrink: 1;//얼마나 작아질 수 있는가 0이면 basis보다 작아질 수 없다.
   //flex: 로 위의 세개를 한 번에 지정할 수 있다.
@@ -115,9 +110,13 @@ const StyledContainerDiv = styled.div`
   // margin: 0 10%;
   width: 1200px;
   margin: 0 auto;
+  // justify-content: center;
+  // align-items: center;
+}
+
 `;
 const StyledFooterDiv = styled.div`
-  flex-basis: 10%;//기본 크기 설정
+  flex-basis: 15%;//기본 크기 설정
   flex-grow: 0;//얼마나 더 커질 수 있냐 빈공간 메움 빈 공간을 비율대로 나눈다.
   flex-shrink: 1;//얼마나 작아질 수 있는가 0이면 basis보다 작아질 수 없다.
   //flex: 로 위의 세개를 한 번에 지정할 수 있다.
@@ -149,6 +148,7 @@ const StyledTabLi = styled.li`
     display: ${props => props.user ? "inline" : "block"};
     width: 100%;
     height: 100%;
+    vertical-align: middle;
   }
   background-color: antiquewhite;
   opacity: ${props => props.selected ? "0.5" : "1"};
@@ -157,6 +157,34 @@ const StyledTabLi = styled.li`
     cursor: ${props => props.user ? "auto" : "pointer"};
   }
 `;
+const MainDiv = styled.div`
+width: 100%;
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 10px;
+font-size: 10rem;
+animation: fadein 3s;
+@keyframes fadein {
+  from {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
+}
+`;
+const H1 = styled.h1`
+  color: aliceblue;
+  margin: 10px;
+  > a {
+    color: black;
+    &:hover {
+      text-decoration: none;
+    }
+  }
+`;
+
 function RootDiv({ children, ...rest}) {
   return <StyledRootDiv {...rest}>{children}</StyledRootDiv>
 }
@@ -199,6 +227,14 @@ class TabLi extends Component {
 function TabUserLi({ children, ...rest}) {
   return <StyledTabLi {...rest}>{children}</StyledTabLi>
 }
+const StyledI = styled.i`
+  // display: list-item;
+  margin: 3px;
+  // vertical-align: middle;
+`;
+// function I({children, ...rest}) {
+//   return <StyledI {...rest}>{children}</StyledI>
+// }
 class Main extends Component {
 // const [message, setMessage] = useState("");
 // useEffect(() => {
@@ -218,10 +254,18 @@ constructor(props) {
   
   this.state = {
     id: User.getUserId(),
-    tab: [{
-      name: '모임',
-      path: '/test',
-      component: Test,
+    tab: [
+      {
+        name: '지도',
+        path: '/map',
+        component: MapComponent,
+        selected: false,
+        privileged: 'user',
+      },
+      {
+      name: '통계',
+      path: '/statistics',
+      component: StatisticsComponent,
       selected: false,
       privileged: 'user',
     },
@@ -281,13 +325,16 @@ render() {
     <RootDiv>
       {/* <Router> */}
         <HeaderDiv id="header">
-          <h1>AllOfBoard</h1>
+          <H1><Link to="/">AllOfBoard</Link></H1>
           <TabDiv>
             <TabUl>
               {listItems}
             </TabUl>
             <TabUl user>
-              <TabUserLi user><Link to='/signUp'>회원가입</Link></TabUserLi>
+              <TabUserLi user>
+                {/* <i class="fas fa-user"></i> */}
+                <Link to='/signUp'><StyledI className="fas fa-user"></StyledI>회원가입</Link>
+              </TabUserLi>
               { 
                 (this.state.id === undefined) &&
                 <TabUserLi user>
@@ -305,13 +352,18 @@ render() {
         </HeaderDiv>
         <ContainerDiv>
           <Switch>
-            <Route exact path='/test' component={Test} />
+            <Route exact path='/statistics' component={StatisticsComponent} />
             <Route exact path='/board' component={BoardComponent} />
             <Route path='/test2' component={Test2} />
             <Route exact path='/board/edit' component={BoardEditComponent} />
             <Route exact path='/board/contents' component={BoardContentsComponent} />
+            <Route exact path='/'>
+              <MainDiv>
+                WELCOME
+              </MainDiv>
+            </Route>
             {/* <Route exact path='/signUp' component={signUpComponent} /> */}
-          </Switch> 
+          </Switch>
         </ContainerDiv>
         <FooterDiv>
           <p>hello</p>

@@ -10,4 +10,5 @@ import java.util.UUID;
 
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
     List<Comment> findByboardId(@Param(value = "boardId") UUID boardId);
+    void deleteByid(UUID uuid);
 }

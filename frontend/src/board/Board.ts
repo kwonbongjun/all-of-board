@@ -17,3 +17,7 @@ export async function deleteBoard(data: any) {
     const getData = await Axios.get(`board/deleteBoard${data}`, data);
     return getData.data;
 }
+export async function getBoardListGroupByCategory() {
+    const getData = await Axios.get('board/getGroupByCategory');
+    return getData.data;
+}

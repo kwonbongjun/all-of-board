@@ -1,6 +1,6 @@
 import {Component} from "react";
 // import axios from 'axios';
-import { Form } from 'react-bootstrap';
+import { Form, Modal } from 'react-bootstrap';
 import styled from 'styled-components';
 import * as Axios from '../lib/Axios.ts'
 
@@ -15,6 +15,7 @@ const StyledButton = styled.button`
   cursor: pointer;
   padding-left: 1rem;
   padding-right: 1rem;
+  padding-top: 5px;
 
   /* 크기 */
   height: 2.25rem;
@@ -34,17 +35,64 @@ const StyledButton = styled.button`
     margin-left: 1rem;
   }
 `;
+const Input = styled.input`
+  width: 100px;
+`;
+const SignupDiv = styled.div`
+// position: absolute;
+  width: 100%;
+  height: 100%;
+`;
+const FormDiv = styled.div`
+  position: absolute;
+  top: 20%;
+  left: 42%;
+  width: 300px;
+  height: 500px;
+  // vertical-align: middle;
+  margin: 30px auto;
+`;
+const FormContentsDiv = styled.div`
+  margin: 15px;
+`;
+const NameDiv =  styled.div`
+  display: inline-block;
+  width: 100px;
+  text-align: left;
+`;
+
 function Button({ children, ...rest }) {
     return <StyledButton {...rest}>{children}</StyledButton>;
 }
+function SignUpModal(props) {
+  const signUpModal = props.signUpModal;
+  if (signUpModal) {
+      return <Modal.Dialog>
+      <Modal.Header closeButton>
+        <Modal.Title>Modal title</Modal.Title>
+      </Modal.Header>
 
+      <Modal.Body>
+        <p>Modal body text goes here.</p>
+      </Modal.Body>
+
+      <Modal.Footer>
+        <Button variant="secondary">Close</Button>
+        <Button variant="primary">Save changes</Button>
+      </Modal.Footer>
+    </Modal.Dialog>
+  } else return ;
+}
 class SignUpComponent extends Component {
     constructor(props) {
       super(props)
       this.state = {
         id: '',
-        password: ''
+        password: '',
+        signUpModal: false,
+        errInfo: {},
       }
+      
       this.handleChangeId = this.handleChangeId.bind(this);
       this.handleChangePassword = this.handleChangePassword.bind(this);
       this.signUp = this.signUp.bind(this);
@@ -57,11 +105,20 @@ class SignUpComponent extends Component {
     }
     async signUp(event) {
       event.preventDefault();
-      await Axios.post('login/signUp', 
-      {
-        id: this.state.id,
-        password: this.state.password
-      });
+      try {
+        const a = await Axios.post('login/signUp', 
+        {
+          id: this.state.id,
+          password: this.state.password
+        });
+        window.location.href="/index.html"
+      } catch(e) {
+        console.log(e.response.data.message);
+        this.setState({
+          errInfo: {msg: e.response.data.message}
+        })
+          this.setState({signUpModal:true});
+      }
       // await axios({
       //   method: 'post',
       //   url: 'http://localhost:8080/login/signUp',
@@ -75,18 +132,45 @@ class SignUpComponent extends Component {
       //   withCredentials: true
       // })
     }
+    closeDialog() {
+      this.setState({signUpModal: false})
+    }
     render() {
       return (
-        <Form>
-          <Form.Label>ID</Form.Label>
-          <Form.Control 
-              type ="text" placeholder="ID" value={this.state.id} onChange={this.handleChangeId}
-          ></Form.Control>
-          <Form.Control 
-              type ="password" placeholder="Password" value={this.state.password} onChange={this.handleChangePassword}
-          ></Form.Control>
-          <Button onClick={this.signUp}>회원가입</Button>
-        </Form>
+        <SignupDiv>
+          <FormDiv>
+            <h4>회원가입</h4>
+            <Form>
+              <FormContentsDiv>
+                <NameDiv>ID</NameDiv>
+                <Input
+                    type ="text" placeholder="ID" value={this.state.id} onChange={this.handleChangeId}
+                ></Input>
+              </FormContentsDiv>
+              <FormContentsDiv>
+                <NameDiv>Password</NameDiv>
+                <Input 
+                    type ="password" placeholder="Password" value={this.state.password} onChange={this.handleChangePassword}
+                ></Input>
+              </FormContentsDiv>
+              <Button onClick={this.signUp}>가입</Button>
+            </Form>
+          </FormDiv>
+          
+          <Modal show={this.state.signUpModal} onHide={this.closeDialog.bind(this)}>
+            <Modal.Header closeButton>
+              <Modal.Title>오류</Modal.Title>
+            </Modal.Header>
+
+            <Modal.Body>
+              <p>{this.state.errInfo.msg}</p>
+            </Modal.Body>
+
+            <Modal.Footer>
+              <Button variant="secondary" onClick={this.closeDialog.bind(this)}>Close</Button>
+            </Modal.Footer>
+          </Modal>
+        </SignupDiv>
       )
     }
   }

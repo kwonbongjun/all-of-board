@@ -11,6 +11,35 @@ import * as User from '../user/User.ts';
 const categoryList = [
     '자유'
 ]
+const ComponentDiv = styled.div`
+width: 100%;
+text-align: left;
+`;
+const BottomDiv = styled.div`
+text-align: center;
+`;
+const TextArea = styled.textarea`
+width: 100%;
+`;
+const ItemDiv = styled.div`
+margin: 10px;
+`;
+const ItemContentsDiv = styled.div`
+min-height: 400px;
+border: 1px solid;
+margin: 10px;
+`;
+const ItemDropdown = styled(Dropdown)`
+display: inline-block;
+`;
+const ItemInputGroup = styled(InputGroup)`
+display: inline-block;
+width: 5%;
+`;
+const ItemFormControl = styled(Form.Control)`
+display: inline-block;
+width: 80%;
+`;
 class BoardEditComponent extends Component {    
     constructor(props) {
         super(props);
@@ -45,6 +74,8 @@ class BoardEditComponent extends Component {
             content.innerHTML = board.board.content;
             const fileFormList = [];
             for (let i = 0; i < fileList.length; i++) {
+                
+                console.log(document.querySelectorAll('img'), i);
                 // const oldImg = document.querySelectorAll('img')[i]
                 // oldImg.onload = function() {
                 //     window.URL.revokeObjectURL(this.src);
@@ -169,17 +200,19 @@ class BoardEditComponent extends Component {
         const attachedFilesAttrs = this.state.attachedFilesAttrs;
         for (const file of e.target.files) {
             const fileBlob = await this.readfile(file);
-            // const fileItem = Object.create(file);
-            file.category = 'attachedFile'
-            attachedFiles.push(file);
-            attachedFilesAttrs.push( 
-                {
-                    category: 'attachedFile',
-                    type: file.type,
-                    size: file.size,
-                    name: file.name,
-                }
-            )
+            if (! attachedFilesAttrs.find(item => item.name === file.name)) {
+                // const fileItem = Object.create(file);
+                file.category = 'attachedFile'
+                attachedFiles.push(file);
+                attachedFilesAttrs.push( 
+                    {
+                        category: 'attachedFile',
+                        type: file.type,
+                        size: file.size,
+                        name: file.name,
+                    }
+                )
+            }
         };
         this.setState({
             attachedFiles:  attachedFiles,
@@ -260,7 +293,7 @@ class BoardEditComponent extends Component {
     saveContents = async (e) => {
         e.preventDefault();
         const fileTag = document.getElementById("fileList").innerHTML;
-        this.setState({
+        await this.setState({
             content: fileTag
         });
         const data = {
@@ -276,6 +309,8 @@ class BoardEditComponent extends Component {
             attachedFiles: this.state.attachedFiles,
             category: this.state.category,
         }
+        console.log(this.state.content);
+        console.log(fileTag);
         try {
             const formData = new FormData();
             formData.append('title', this.state.title);
@@ -312,9 +347,29 @@ class BoardEditComponent extends Component {
         
         
     }
+    cancelContents = async (e) => {
+        e.preventDefault();
+        window.history.back();
+    }
     selectCategory = (category) => {
         console.log(category);
         this.setState({category: category});
+    }
+    deleteAttachedFile = async (e, i) => {
+        console.log(e, i);
+        if (User.getUserId() === this.state.board.author) {
+            try {
+                this.setState({attachedFiles: this.state.attachedFiles.filter(function(comment,idx) { 
+                    return idx !== i
+                }),
+                attachedFilesAttrs: this.state.attachedFilesAttrs.filter(function(comment,idx) { 
+                    return idx !== i
+                }),
+                });
+            } catch (e) {
+                console.log(e);
+            }
+        }
     }
     render() {
         const categoryRender = categoryList.map(category => {
@@ -322,34 +377,40 @@ class BoardEditComponent extends Component {
             }
         );
         return (
-            <div>
+            <ComponentDiv>
                 <Form>
-                    카테고리
-                    <Dropdown>
-                        <Dropdown.Toggle variant="success" id="dropdown-basic">
-                            {this.state.category}
-                        </Dropdown.Toggle>
+                    <ItemDiv>
+                        카테고리:
+                        <ItemDropdown>
+                            <Dropdown.Toggle variant="success" id="dropdown-basic">
+                                {this.state.category}
+                            </Dropdown.Toggle>
 
-                        <Dropdown.Menu>
-                            {categoryRender}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                    <InputGroup className="mb-3">
+                            <Dropdown.Menu>
+                                {categoryRender}
+                            </Dropdown.Menu>
+                        </ItemDropdown>
+                    </ItemDiv>
+                    <ItemDiv>
+                    <ItemInputGroup>
                         <InputGroup.Prepend>
                             <InputGroup.Text id="basic-addon1">제목</InputGroup.Text>
                         </InputGroup.Prepend>
-                    </InputGroup>
-                    <Form.Control
+                    </ItemInputGroup>
+                    <ItemFormControl
                             type="text"
-                            placeholder="Username"
+                            placeholder="제목"
                             aria-label="Username"
                             aria-describedby="basic-addon1"
                             value={this.state.title}
                             onChange={this.changeTitle}
-                    ></Form.Control>
-                    <div contentEditable="true" id="fileList" >
-                        
-                    </div>
+                    ></ItemFormControl>
+                    </ItemDiv>
+                    <ItemDiv>
+                        내용
+                    </ItemDiv>
+                    <ItemContentsDiv contentEditable="true" id="fileList" >
+                    </ItemContentsDiv>
                     {/* <Form.Group controlId="exampleForm.ControlTextarea1">
                         <Form.Label>내용</Form.Label>
                         <Form.Control as="textarea" rows={3} />
@@ -358,25 +419,37 @@ class BoardEditComponent extends Component {
                         <p>No files selected!</p>
                     </div>
                     <textarea name="hide" style={{display:'none'}}></textarea> */}
-                    <div>
+                    <ItemDiv>
+                        글 작성에 파일 추가:
                         <input type="file" id="input" name="file" multiple onChange={this.handleFiles}></input>
-                    </div>
-                    <div>
+                    </ItemDiv>
+                    <ItemDiv>
+                        다운로드용 파일 업로드:
                         <input type="file" id="input" name="file" multiple onChange={this.handleAttachedFiles}></input>
-                    </div>
+                    </ItemDiv>
+                    <ItemDiv>업로드 파일 목록</ItemDiv>
                     {
                         this.state.attachedFiles.map((file,i) => {
-                            return <div key={file.name+i}>{file.name}</div>
+                            return <ItemDiv key={file.name+i}>
+                                {file.name}
+                                { (User.getUserId()) &&
+                                    <button variant="primary" type="button" onClick={() => this.deleteAttachedFile(file, i)}>
+                                        <i class="fas fa-backspace"></i>
+                                    </button>
+                                }
+                            </ItemDiv>
                         })
                     }
-                    <Button variant="primary" onClick={this.saveContents} type="submit">
-                        저장
-                    </Button>
-                    <Button variant="primary"  type="submit">
-                        취소
-                    </Button>
+                    <BottomDiv>
+                        <Button variant="primary" onClick={this.saveContents} type="submit">
+                            저장
+                        </Button>
+                        <Button variant="primary" onClick={this.cancelContents} type="submit">
+                            취소
+                        </Button>
+                    </BottomDiv>
                 </Form>
-            </div>
+            </ComponentDiv>
         )
     }
 }

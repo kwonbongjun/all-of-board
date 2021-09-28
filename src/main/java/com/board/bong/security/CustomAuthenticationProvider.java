@@ -26,7 +26,7 @@ public class CustomAuthenticationProvider extends DaoAuthenticationProvider//imp
         try {
           return super.authenticate(authentication);
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("error");
+            throw new CustomAuthenticationException(000, "ID 혹은 Password가 중복되었습니다.");
         }
     }
 

@@ -1,6 +1,6 @@
 import {Component} from "react";
 import axios from "axios";
-import { InputGroup, FormControl, Button } from 'react-bootstrap';
+import { InputGroup, FormControl, Modal } from 'react-bootstrap';
 import { Form } from 'react-bootstrap';
 import {AgGridColumn, AgGridReact} from 'ag-grid-react';
 import styled from 'styled-components';
@@ -9,7 +9,29 @@ import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 import * as Axios from '../lib/Axios.ts'
 import * as User from '../user/User.ts';
 import CommentComponent from './CommentComponent'
-
+const ComponentDiv = styled.div`
+width: 100%;
+text-align: left;
+`;
+const BottomDiv = styled.div`
+text-align: center;
+margin: 10px;
+`;
+const TextArea = styled.textarea`
+width: 100%;
+margin: 10px;
+`;
+const ItemDiv = styled.div`
+margin: 10px;
+`;
+const ItemContentsDiv = styled.div`
+min-height: 400px;
+border: 1px solid;
+margin: 10px;
+`;
+const Button = styled.button`
+margin: 10px;
+`;
 class BoardContentsComponent extends Component {    
     constructor(props) {
         super(props);
@@ -26,6 +48,11 @@ class BoardContentsComponent extends Component {
             listItems: [],
             commentList: [],
             comment: undefined,
+            userId: undefined,
+            imgModal: false,
+            imgSrc: undefined,
+            recommendation: 0,
+            decommendation: 0,
         }
         console.log('12313');
         this.handleFiles = this.handleFiles.bind(this);
@@ -33,24 +60,29 @@ class BoardContentsComponent extends Component {
         // this.saveContents = this.saveContents.bind(this);
         this.changeTitle = this.changeTitle.bind(this);
         this.changeContent = this.changeContent.bind(this);
-
     }
     async componentDidMount() {
         var url = new URL(window.location.href);
         var id = url.searchParams.get("id");
-        this.setState({id: id});
+        this.setState({ id: id });
         const boardData = {
             id: window.location.search
         }
+        await Axios.post('board/boardViewById', 
+        {
+            id: id,
+        });
         const board = await Board.getBoard(boardData);
         console.log(board);
         this.setState({
             board: board.board
         })
+        this.setState({recommendation: this.state.board.recommendation});
+        this.setState({decommendation: this.state.board.decommendation});
         const fileList = board.file.filter(fileItem => { if(fileItem.category === 'file') return fileItem});
         const content = document.getElementById("content");
         content.innerHTML = this.state.board.content;
-    
+        let outer = this;
         for (let i = 0; i < fileList.length; i++) {
             // const oldImg = document.querySelectorAll('img')[i]
             // oldImg.onload = function() {
@@ -86,7 +118,10 @@ class BoardContentsComponent extends Component {
             
             // const fileBlob = await this.readfile(file);
             img.src = window.URL.createObjectURL(file);
-            console.log('2',img.src);
+            img.onclick= function() {
+                let src = window.URL.createObjectURL(file);;
+                outer.setState({imgModal: true, imgSrc: src});
+            }
             img.height = 200;
             img.onload = function() {
               window.URL.revokeObjectURL(this.src);
@@ -139,7 +174,7 @@ class BoardContentsComponent extends Component {
         //         return <a key={file.id + file.name} href="" download>{file.name}</a>
         //     })
         // })
-
+        this.setState({userId: User.getUserId()});
     }
     changeTitle(event) {
         console.log(event, event.target.value);
@@ -248,13 +283,77 @@ class BoardContentsComponent extends Component {
         {
             boardId:this.state.id, 
             text: text,
-            author: User.getUserId() === undefined? 'anonymous': User.getUserId,
+            author: User.getUserId() === undefined? 'anonymous': User.getUserId(),
             time: new Date(),
             recommendation: 0,
             decommendation: 0,
         });
         console.log(e, text);
         window.location.reload();
+    }
+    recommend = async (e) => {
+        if (User.getUserId()) {
+            try {
+                let res = await Axios.post('board/recommend', 
+                {
+                    boardId:this.state.id, 
+                    userId: User.getUserId(),
+                    type: 'recommendation'
+                });
+                console.log(res.data);
+                if (res.data) {
+                    await Axios.post('board/boardRecommendById', 
+                    {
+                        id:this.state.id, 
+                        recommendation: this.state.recommendation + 1,
+                        decommendation: this.state.decommendation
+                    });
+                    this.setState({recommendation: this.state.recommendation + 1});
+                } else {
+                    await Axios.post('board/boardRecommendById', 
+                    {
+                        id:this.state.id, 
+                        recommendation: this.state.recommendation - 1,
+                        decommendation: this.state.decommendation
+                    });
+                    this.setState({recommendation: this.state.recommendation - 1});
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        }
+    }
+    decommend = async (e) => {
+        if (User.getUserId()) {
+            try {
+                let res = await Axios.post('board/decommend', 
+                {
+                    boardId:this.state.id, 
+                    userId: User.getUserId(),
+                    type: 'decommendation'
+                });
+                console.log(res.data);
+                if (res.data) {
+                    await Axios.post('board/boardRecommendById', 
+                    {
+                        id:this.state.id, 
+                        recommendation: this.state.recommendation,
+                        decommendation: this.state.decommendation + 1
+                    });
+                    this.setState({decommendation: this.state.decommendation + 1});
+                } else {
+                    await Axios.post('board/boardRecommendById', 
+                    {
+                        id:this.state.id, 
+                        recommendation: this.state.recommendation,
+                        decommendation: this.state.decommendation - 1
+                    });
+                    this.setState({decommendation: this.state.decommendation - 1});
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        }
     }
     commentHandler = () => {
         console.log(this.state.comment);
@@ -264,57 +363,97 @@ class BoardContentsComponent extends Component {
         await Board.deleteBoard('?id='+this.state.id);
         window.location.href = '/board';
     }
+    closeDialog() {
+        window.URL.revokeObjectURL(this.state.imgSrc);
+        this.setState({imgModal: false})
+    }
     render() {
         return (
-            <div>
-                <Form>
+            <ComponentDiv>
+                {/* <Form>
                     <InputGroup className="mb-3">
                         <InputGroup.Prepend>
                             <InputGroup.Text id="basic-addon1">제목</InputGroup.Text>
                         </InputGroup.Prepend>
                         
                     </InputGroup>
-                </Form>
-                { this.state.board.title }
-                카테고리 : {this.state.board.category}
-                작성자 : {this.state.board.author}
-                시간 : {this.state.board.time}
-                조회수: {this.state.board.view}
-                내용
-                <div id="content"></div>
-                추천: {this.state.board.recommendation}
-                싫어요: {this.state.board.decommendation}
+                </Form> */}
+                <ItemDiv>제목: { this.state.board.title }</ItemDiv>
+                <ItemDiv>카테고리 : {this.state.board.category}</ItemDiv>
+                <ItemDiv>작성자 : {this.state.board.author}</ItemDiv>
+                <ItemDiv>시간 : {this.state.board.time}</ItemDiv>
+                <ItemDiv>조회수: {this.state.board.view}</ItemDiv>
+                <ItemDiv>내용</ItemDiv>
+                <ItemContentsDiv id="content"></ItemContentsDiv>
                 {/* <div id="fileList">
                     <p>No files selected!</p>
                 </div>
                 <textarea name="hide" style={{display:'none'}}></textarea> */}
-                
-                <div id='download'>
+                <ItemDiv>다운로드:
+                <span id='download'>
                     {this.state.listItems}
-                </div>
-                <div>
+                </span>
+                
+                <BottomDiv>
+                    <Button variant="primary" type="button" onClick={this.recommend}>
+                        <i className="fas fa-thumbs-up"></i>
+                        추천: {this.state.recommendation}
+                    </Button>
+                    
+                    <Button variant="primary" type="button" onClick={this.decommend}>
+                        <i className="fas fa-thumbs-down"></i>
+                        싫어요: {this.state.decommendation}
+                    </Button>
+                </BottomDiv>
+
+                </ItemDiv>
+                <ItemDiv>댓글</ItemDiv>
+                <ItemDiv>
                     <CommentComponent></CommentComponent>
-                </div>
-                <div>
+                </ItemDiv>
+                
+                <ItemDiv>댓글 작성</ItemDiv>
+                <BottomDiv>
                     <Form>
                         <Form.Group controlId="exampleForm.ControlTextarea1">
-                            <textarea rows={3} id="commentText"/>
+                            <TextArea rows={3} id="commentText"/>
                         </Form.Group>
                         <Button variant="primary" type="button" onClick={this.addComment}>
                             Submit
                         </Button>
                     </Form>
-                </div>
-                
+                    
+                {
+                    this.state.userId === this.state.board.author &&
                     <Link to={{
-                                pathname: `/board/edit`,
-                                search: `?id=${this.state.id}`}}> <Button variant="primary" type="button">수정</Button>
+                        pathname: `/board/edit`,
+                        search: `?id=${this.state.id}`}}> <Button variant="primary" type="button">수정</Button>
                     </Link>
-               
-                <Button variant="primary" onClick={this.deleteContents} type="button">
-                    삭제
-                </Button>
-            </div>
+                }
+                {
+                    this.state.userId === this.state.board.author &&
+                    <Button variant="primary" onClick={this.deleteContents} type="button">
+                        삭제
+                    </Button>
+                }
+                 
+                </BottomDiv>
+                <Modal show={this.state.imgModal} onHide={this.closeDialog.bind(this)}>
+                    <Modal.Header closeButton>
+                    <Modal.Title>이미지 확대</Modal.Title>
+                    </Modal.Header>
+
+                    <Modal.Body>
+                    <div>
+                        <img src={this.state.imgSrc} width='400' height= '300'></img>
+                    </div>
+                    </Modal.Body>
+
+                    <Modal.Footer>
+                    <Button variant="secondary" onClick={this.closeDialog.bind(this)}>Close</Button>
+                    </Modal.Footer>
+                </Modal>
+            </ComponentDiv>
         )
     }
 }

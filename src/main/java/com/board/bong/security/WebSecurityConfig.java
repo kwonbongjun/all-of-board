@@ -44,9 +44,11 @@ import java.util.Map;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     public WebSecurityConfig(CustomLoginLogoutHandler.LoginSuccessHandler loginSuccessHandler,
-                             CustomLoginLogoutHandler.LogoutSuccessHandler logoutSuccessHandler) {
+                             CustomLoginLogoutHandler.LogoutSuccessHandler logoutSuccessHandler,
+                             CustomLoginLogoutHandler.LoginFailureHandler loginFailureHandler) {
         this.loginSuccessHandler = loginSuccessHandler;
         this.logoutSuccessHandler = logoutSuccessHandler;
+        this.loginFailureHandler = loginFailureHandler;
     }
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -84,17 +86,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessHandler(logoutSuccessHandler)
                 .permitAll();
     }
-    @Override
-    public UserDetailsService userDetailsService() {
-        UserDetails user =
-                User.withDefaultPasswordEncoder()
-                        .username("user")
-                        .password("password")
-                        .roles("USER")
-                        .build();
-
-        return new InMemoryUserDetailsManager(user);
-    }
+//    @Override
+//    public UserDetailsService userDetailsService() {
+//        UserDetails user =
+//                User.withDefaultPasswordEncoder()
+//                        .username("user")
+//                        .password("password")
+//                        .roles("USER")
+//                        .build();
+//
+//        return new InMemoryUserDetailsManager(user);
+//    }
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
@@ -114,7 +116,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //        filter.setRequiresAuthenticationRequestMatcher(
 //                new AntPathRequestMatcher("/login"));
         filter.setAuthenticationSuccessHandler(loginSuccessHandler);
-//        filter.setAuthenticationFailureHandler(loginFailureHandler);
+        filter.setAuthenticationFailureHandler(loginFailureHandler);
         filter.setAuthenticationManager(authenticationManagerBean());
 //        filter.setSessionAuthenticationStrategy(customSessionAuthenticationStrategy());
         return filter;
@@ -143,7 +145,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             catch (Exception e)
             {
                 if (e instanceof AuthenticationException)
-                    throw (AuthenticationException)e;
+                    throw (AuthenticationException) e;
+//                    throw new AuthenticationException("ID 혹은 Password가 잘못 되었습니다.");
                 throw new AuthenticationCredentialsNotFoundException("error");
             }
 
@@ -153,7 +156,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 throws AuthenticationException
         {
             DirectLoginInfo info = new DirectLoginInfo();
-            String str = null;
+            String str;
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 str = readRequestToString(request);
@@ -206,8 +209,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public CustomUserDetailsService customUserDetailsService()
     {
-        CustomUserDetailsService detailsService = new CustomUserDetailsService();
-        return detailsService;
+        return new CustomUserDetailsService();
     }
     @Bean
     public PasswordEncoder customPasswordEncoder()
@@ -254,11 +256,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public static class DirectLoginInfo implements Serializable {
         public String username;
         public String password;
-    };
+    }
     @Autowired
     private CustomAuthenticationEntryPoint authenticationEntryPoint;
     @Autowired
     private AuthenticationManager authenticationManager;
     private final CustomLoginLogoutHandler.LoginSuccessHandler loginSuccessHandler;
+    private final CustomLoginLogoutHandler.LoginFailureHandler loginFailureHandler;
     private final CustomLoginLogoutHandler.LogoutSuccessHandler logoutSuccessHandler;
 }

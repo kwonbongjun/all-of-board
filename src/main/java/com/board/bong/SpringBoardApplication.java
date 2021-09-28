@@ -10,10 +10,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
+import javax.annotation.PostConstruct;
+import java.util.TimeZone;
+
 @SpringBootApplication
 public class SpringBoardApplication implements CommandLineRunner {
     public static void main(String[] args) {
         SpringApplication.run(SpringBoardApplication.class, args);
+    }
+    @PostConstruct
+    void started() {
+        // set JVM timezone as UTC
+        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
     }
     @Autowired
     private MongoTemplate mongoTemplate;

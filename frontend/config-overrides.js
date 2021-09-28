@@ -18,11 +18,8 @@ const multipleEntry = require('react-app-rewire-multiple-entry')([
     // Visit: http[s]://localhost:3000/public/login.html
   },
 ]);
-// const addRewireScssLoader = require("react-app-rewire-scss-loaders");
-// const SassRuleRewirer = require('react-app-rewire-sass-rule');
-// const rewireSass = require('react-app-rewire-sass');
 const rewireSass = require ( 'react-app-rewire-sass-modules'); 
-const { override, addWebpackModuleRule, adjustStyleLoaders } = require('customize-cra');
+const { override, addWebpackModuleRule, adjustStyleLoaders, addWebpackResolve } = require('customize-cra');
 //https://github.com/arackaf/customize-cra
 module.exports = {
   webpack: override(
@@ -39,6 +36,7 @@ module.exports = {
             loader: require.resolve('css-loader'),
             options: {
               importLoaders: 1,
+              // modules: true // css module 적용 (중복클래스허용)
             }
           },
           {
@@ -71,12 +69,17 @@ module.exports = {
             options: {         
               sourceMap: true                
             }              
-          }
+          },
         ]
-      } 
+      },      
+      {
+        test: /\.scss$/,
+        loaders: ['style', 'css', 'sass'],
+        options: {
+          importLoaders: 3,
+          modules: true // css module 적용 (중복클래스허용)
+        }
+      },
     ),
-    adjustStyleLoaders((loader) => {
-      console.log(loader)
-    })
   )
 };

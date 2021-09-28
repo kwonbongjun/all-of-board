@@ -26,6 +26,7 @@ const StyledGridDiv = styled.div`
     position: relative;
     width: 100%;
     height: 80%;
+    text-align: left;
 `;
 const StyledBoardFooterDiv = styled.div`
     position: relative;
@@ -125,7 +126,23 @@ class BoardComponent extends Component {
         const outer = this;
     }
     async onGridReady(params) {
-        const rowData = await Board.getBoardList();
+        let rowDataList = await Board.getBoardList();
+        function a(time) {
+            time = time.replace('T', ' ');
+            return time;
+        }
+        let rowData = rowDataList.map(item => {
+            return {
+                id: item.id,
+                category: item.category,
+                title: item.title,
+                author: item.author,
+                view: item.view,
+                time: a(item.time),//new Date(item.time),
+                recommendation: item.recommendation,
+                decommendation: item.decommendation
+            }
+        });
         console.log(rowData);
         this.setState({
             gridApi: params.api,

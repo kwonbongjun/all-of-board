@@ -1,12 +1,16 @@
 import ReactDOM from 'react-dom';
 import './index.css';
+// import './index.scss';
+// import style from './index.module.scss';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 // import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.scss';
 import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-alpine.css';
-
+import "@fortawesome/fontawesome-free/css/all.css"; 
+// require('./index.css');
+// document.getElementById('root').setAttribute("style", "height: 100%;");
 ReactDOM.render(
   // <React.StrictMode>
     <App />,
