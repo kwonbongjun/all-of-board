@@ -42,8 +42,8 @@ public class BoardController {
 
     @PostMapping(path = "/addBoard")
     @Transactional
-    public void addBoard(@RequestPart(value = "files") List<MultipartFile> files,
-                         @RequestPart(value = "attachedFiles") List<MultipartFile> attachedFiles,
+    public void addBoard(@RequestPart(value = "files", required = false) List<MultipartFile> files,
+                         @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles,
                          @ModelAttribute AddBoardParam addBoardParam) { //@RequestBody AddBoardParam addBoardParam
         Map<String,String> map = new HashMap<>();
         map.put("title",addBoardParam.title);
@@ -55,21 +55,26 @@ public class BoardController {
                     addBoardParam.decommendation, addBoardParam.comment, addBoardParam.category));
             JSONParser parser = new JSONParser();
             JSONArray jsonArray = (JSONArray) parser.parse( addBoardParam.filesAttrs );
+            if (files != null) {
+                for (int i = 0; i < files.size(); i++) {
+                    JSONObject jsonObj = (JSONObject) jsonArray.get(i);
 
-            for (int i = 0; i < files.size(); i++) {
-                JSONObject jsonObj = (JSONObject) jsonArray.get(i);
-
-                boardFileRepository.save(new BoardFile(uuid, jsonObj.get("category").toString(),
-                        jsonObj.get("type").toString(), Integer.parseInt(jsonObj.get("size").toString()), jsonObj.get("name").toString(),
-                        new SerialBlob(files.get(i).getBytes())));
+                    boardFileRepository.save(new BoardFile(uuid, jsonObj.get("category").toString(),
+                            jsonObj.get("type").toString(), Integer.parseInt(jsonObj.get("size").toString()), jsonObj.get("name").toString(),
+                            new SerialBlob(files.get(i).getBytes())));
+                }
             }
+
             jsonArray = (JSONArray) parser.parse( addBoardParam.attachedFilesAttrs );
-            for (int i = 0; i < attachedFiles.size(); i++) {
-                JSONObject jsonObj = (JSONObject) jsonArray.get(i);
-                boardFileRepository.save(new BoardFile(uuid, jsonObj.get("category").toString(),
-                        jsonObj.get("type").toString(), Integer.parseInt(jsonObj.get("size").toString()), jsonObj.get("name").toString(),
-                        new SerialBlob(attachedFiles.get(i).getBytes())));
+            if (attachedFiles != null) {
+                for (int i = 0; i < attachedFiles.size(); i++) {
+                    JSONObject jsonObj = (JSONObject) jsonArray.get(i);
+                    boardFileRepository.save(new BoardFile(uuid, jsonObj.get("category").toString(),
+                            jsonObj.get("type").toString(), Integer.parseInt(jsonObj.get("size").toString()), jsonObj.get("name").toString(),
+                            new SerialBlob(attachedFiles.get(i).getBytes())));
+                }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -142,16 +147,23 @@ public class BoardController {
 
     @PostMapping(path = "/editBoard")
     @Transactional
-    public void editBoard(@RequestPart(value = "files") List<MultipartFile> files,
-                         @RequestPart(value = "attachedFiles") List<MultipartFile> attachedFiles,
+    public void editBoard(@RequestPart(value = "files", required = false) List<MultipartFile> files,
+                         @RequestPart(value = "attachedFiles", required = false) List<MultipartFile> attachedFiles,
                          @ModelAttribute EditBoardParam editBoardParam) { //@RequestBody AddBoardParam addBoardParam
         Map<String,String> map = new HashMap<>();
         UUID uuid = UUID.randomUUID();
         Board board = boardRepository.findByid(UUID.fromString(editBoardParam.id));
+        board.setTitle(editBoardParam.title);
+        board.setContent(editBoardParam.content);
+        board.setAuthor(editBoardParam.author);
+        board.setTime(LocalDateTime.now());
+        board.setComment(editBoardParam.comment);
+        board.setCategory(editBoardParam.category);
+
         try {
-            boardRepository.save(new Board(UUID.fromString(editBoardParam.id), editBoardParam.title, editBoardParam.content,
-                    editBoardParam.author, editBoardParam.view, LocalDateTime.now(), editBoardParam.recommendation,
-                    editBoardParam.decommendation, editBoardParam.comment, editBoardParam.category));
+            boardRepository.save(board);
+//            boardRepository.save(new Board(UUID.fromString(editBoardParam.id), editBoardParam.title, editBoardParam.content,
+//                    editBoardParam.author, LocalDateTime.now(), editBoardParam.comment, editBoardParam.category));
             JSONParser parser = new JSONParser();
             JSONArray jsonArray = (JSONArray) parser.parse( editBoardParam.filesAttrs );
 

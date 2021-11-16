@@ -1,4 +1,4 @@
-import styles from './App.scss';
+// import styles from './App.scss';
 // import './App.css';
 import style from './App.module.scss';
 import Main from './Main.jsx';

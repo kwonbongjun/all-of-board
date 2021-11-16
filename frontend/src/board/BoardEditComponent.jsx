@@ -113,7 +113,7 @@ class BoardEditComponent extends Component {
                 console.log('2',img.src);
                 img.height = 200;
                 img.onload = function() {
-                  window.URL.revokeObjectURL(this.src);
+                  window.URL.revokeObjectURL(img.src);
                 }
                 list.appendChild(img);
             }
@@ -316,10 +316,10 @@ class BoardEditComponent extends Component {
             formData.append('title', this.state.title);
             formData.append('content',this.state.content);
             formData.append('author',User.getUserId()===undefined?'anonymous':User.getUserId());
-            formData.append('view',0);
+            // formData.append('view',0);
             formData.append('time',new Date());
-            formData.append('recommendation',0);
-            formData.append('decommendation',0);
+            // formData.append('recommendation',0);
+            // formData.append('decommendation',0);
             formData.append('comment',0);
             formData.append('category',this.state.category)
             formData.append('filesAttrs', JSON.stringify(this.state.filesAttrs))
@@ -334,6 +334,7 @@ class BoardEditComponent extends Component {
             // formData.append('attachedFiles',this.state.attachedFiles);
             console.log(this.state.files, this.state.filesAttrs);
             if (this.state.edit) {
+                console.log('formData',formData)
                 formData.append('id', this.state.board.id);
                 await Axios.postWithFiles('board/editBoard', data, formData);
                 window.location.href='/board/contents?id='+this.state.board.id;
@@ -434,7 +435,7 @@ class BoardEditComponent extends Component {
                                 {file.name}
                                 { (User.getUserId()) &&
                                     <button variant="primary" type="button" onClick={() => this.deleteAttachedFile(file, i)}>
-                                        <i class="fas fa-backspace"></i>
+                                        <i className="fas fa-backspace"></i>
                                     </button>
                                 }
                             </ItemDiv>

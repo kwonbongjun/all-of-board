@@ -72,7 +72,12 @@ class BoardContentsComponent extends Component {
         {
             id: id,
         });
-        const board = await Board.getBoard(boardData);
+        let board = await Board.getBoard(boardData);
+        function getTime(time) {
+            time = time.replace('T', ' ');
+            return time;
+        }
+        board.board.time = getTime(board.board.time);
         console.log(board);
         this.setState({
             board: board.board
@@ -158,9 +163,10 @@ class BoardContentsComponent extends Component {
             // const fileBlob = await this.readfile(file);
             const url = window.URL.createObjectURL(file);
             const a = document.createElement("a");
-            a.download = `${attachedFileList[i].name}.jpg`;
+            a.download = `${attachedFileList[i].name}`;
             a.href = url;
-            a.innerText=`${attachedFileList[i].name}.jpg`;
+            a.innerText=`${attachedFileList[i].name}(${attachedFileList[i].size}byte)`;
+            a.setAttribute('style', 'margin: 10px;display: inline-block');
             file.onload = function() {
                 window.URL.revokeObjectURL(url);
             }

@@ -49,6 +49,15 @@ public class Board{
         this.comment = comment;
         this.category = category;
     }
+    public Board(UUID uuid, String title, String content, String author, LocalDateTime time, int comment, String category) {
+        this.id = uuid;
+        this.title = title;
+        this.content = content;
+        this.author = author;
+        this.time = time;
+        this.comment = comment;
+        this.category = category;
+    }
 
     public UUID getId() {
         return id;

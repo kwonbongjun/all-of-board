@@ -15,7 +15,7 @@ const rowData = [
 const StyledBoardDiv = styled.div`
     width: 100%;
     height: 100%;
-    poisition: absoluite;
+    position: absoluite;
 `;
 const StyledBoardHeaderDiv = styled.div`
     position: relative;
@@ -127,7 +127,7 @@ class BoardComponent extends Component {
     }
     async onGridReady(params) {
         let rowDataList = await Board.getBoardList();
-        function a(time) {
+        function getTime(time) {
             time = time.replace('T', ' ');
             return time;
         }
@@ -138,7 +138,7 @@ class BoardComponent extends Component {
                 title: item.title,
                 author: item.author,
                 view: item.view,
-                time: a(item.time),//new Date(item.time),
+                time: getTime(item.time),//new Date(item.time),
                 recommendation: item.recommendation,
                 decommendation: item.decommendation
             }

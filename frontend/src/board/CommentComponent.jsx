@@ -37,7 +37,7 @@ class CommentComponent extends Component {
                 {comment.decommendation}
                 { (User.getUserId()) &&
                 <Button variant="primary" type="button" onClick={() => this.deleteComment(comment, i)}>
-                    <i class="fas fa-backspace"></i>
+                    <i className="fas fa-backspace"></i>
                 </Button>
                 }
                 </ItemDiv>
@@ -67,7 +67,7 @@ class CommentComponent extends Component {
                         {comment.decommendation}
                         { (User.getUserId()) &&
                         <Button variant="primary" type="button" onClick={() => this.deleteComment(comment, i)}>
-                            <i class="fas fa-backspace"></i>
+                            <i className="fas fa-backspace"></i>
                         </Button>
                         }
                         </ItemDiv>

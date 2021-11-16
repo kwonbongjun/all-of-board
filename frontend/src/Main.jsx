@@ -352,6 +352,7 @@ render() {
         </HeaderDiv>
         <ContainerDiv>
           <Switch>
+            <Route exact path='/map' component={MapComponent} />
             <Route exact path='/statistics' component={StatisticsComponent} />
             <Route exact path='/board' component={BoardComponent} />
             <Route path='/test2' component={Test2} />

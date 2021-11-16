@@ -3,10 +3,10 @@ import axios from "axios";
 import * as Axios from '../lib/Axios.ts'
 import { Form, Modal } from 'react-bootstrap';
 import styled from 'styled-components';
-import style from './login.module.css';
+import style from './Login.module.css';
 import s2 from './Login.module.scss';
-import './Login2.scss';
-import Btn from '../Button.scss';
+// import './Login2.scss';
+// import Btn from '../Button.scss';
 const SignupDiv = styled.div`
 // position: absolute;
   width: 100%;
